@@ -19,6 +19,7 @@ libsophon目前包含如下组件：
 
     sudo -E apt update
     sudo -E apt-get install -y \
+            bsdmainutils \
             build-essential \
             cmake \
             ninja-build \
@@ -31,6 +32,11 @@ libsophon目前包含如下组件：
             g++-aarch64-linux-gnu \
             git
 
+**获取git submodules：**
+
+::
+
+    git submodule update --init
 
 **编译：**
 
@@ -80,7 +86,8 @@ libsophon目前包含如下组件：
     sudo ln -s xxx/a53lite_pkg.bin /lib/firmware/bm1684x_firmware.bin.bin
     # where xxx is the path of firmware, if firmware is modify, ln new firmware to /lib/firmware/bm1684x_firmware.bin
 
-    insmod ./sg_x86_pcie_device/bmsophon.ko
+    sudo dpkg -i sophon-*.deb
+    source /etc/profile
     ./bm-smi/bm-smi
     ./tpu-runtime/bmrt_test --context static.int8
     ./tpu-runtime/bmrt_test --context static.int8.b4
@@ -102,7 +109,8 @@ libsophon目前包含如下组件：
     sudo ln -s xxx/a53lite_pkg.bin /lib/firmware/bm1684x_firmware.bin
     # where xxx is the path of firmware, if firmware is modify, ln new firmware to /lib/firmware/bm1684x_firmware.bin
 
-    insmod ./sg_x86_pcie_device/bmsophon.ko
+    sudo dpkg -i sophon-*.deb
+    source /etc/profile
     ./bm-smi/bm-smi
     ./tpu-runtime/bmrt_test --context static.int8
     ./tpu-runtime/bmrt_test --context static.int8.b4
@@ -198,10 +206,6 @@ libsophon目前包含如下组件：
 ::
 
     安装依赖包，请参考pcie模式。
-    手动修改aarch64-linux-gnu-成6.3.1版本：
-    cd /usr/bin/ && mkdir aarch64-bak
-    mv aarch64-linux-gnu-* aarch64-bak
-    ln -s /workspace/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-* .
 
     假定前面拷贝的linux-headers安装包名叫linux-headers-5.4.207-bm1684-ga2f7484bf21a.deb：
     header="linux-headers-5.4.207-bm1684-ga2f7484bf21a"
@@ -209,8 +213,8 @@ libsophon目前包含如下组件：
     cd /workspace/libsophon
     mkdir build && cd build
     cmake -DPLATFORM=soc -DSOC_LINUX_DIR=/workspace/soc_kernel/usr/src/${header}/ -DLIB_DIR=/workspace/libsophon/3rdparty/soc/ \
-          -DCROSS_COMPILE_PATH=/absolute_path_to-gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu \
-          -DCMAKE_TOOLCHAIN_FILE=/absolute_path_to_libsophon/toolchain-aarch64-linux.cmake \
+          -DCROSS_COMPILE_PATH=/absolute_path/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu \
+          -DCMAKE_TOOLCHAIN_FILE=/absolute_path/libsophon/toolchain-aarch64-linux.cmake \
           -DCMAKE_INSTALL_PREFIX=$PWD/../install ..
 
     make
@@ -294,7 +298,10 @@ libsophon目前包含如下组件：
 
 ::
 
+    cd /
+    git clone ssh://${your_name}@gerrit-ai.sophgo.vip:29418/libsophon
     cd libsophon
+    git submodule update --init
     mkdir build && cd build
     cmake -DPLATFORM=soc -DSOC_LINUX_DIR=/usr/src/${header}/  -DCMAKE_INSTALL_PREFIX=$PWD/../install ..
     make

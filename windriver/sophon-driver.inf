@@ -1,0 +1,94 @@
+;
+; sophon-driver.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = Sophon
+ClassGuid   = {316D30EF-538D-4C5F-8B75-57638A76EC07}
+Provider    = %ManufacturerName%
+CatalogFile = sophon-driver.cat
+DriverVer   =
+
+[DestinationDirs]
+DefaultDestDir                             = 12
+sophon-driver_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg = SophonDriverClassReg
+
+[SophonDriverClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+sophon-driver.sys                          = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll = 1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%sophon-driver.DeviceDesc% = sophon-driver_Device, PCI\VEN_1F1C&DEV_1686 ; hw-id
+
+[sophon-driver_Device.NT]
+CopyFiles = Drivers_Dir
+
+[Drivers_Dir]
+sophon-driver.sys
+
+; MSI setup
+[sophon-driver_Device.NT.HW]
+AddReg = SophonDriver_Reg
+
+[SophonDriver_Reg]
+HKR,Interrupt Management,0x00000010
+HKR,Interrupt Management\MessageSignaledInterruptProperties,0x00000010
+HKR,Interrupt Management\MessageSignaledInterruptProperties,MSISupported,0x00010001,1
+
+; ----- Service installation -----
+[sophon-driver_Device.NT.Services]
+AddService = sophon-driver,%SPSVCINST_ASSOCSERVICE%, sophon-driver_Service_Inst
+
+; ----- sophon-driver driver install sections -----
+[sophon-driver_Service_Inst]
+DisplayName    = %sophon-driver.SVCDESC%
+ServiceType    = 1                   ; SERVICE_KERNEL_DRIVER
+StartType      = 3                   ; SERVICE_DEMAND_START
+ErrorControl   = 1                   ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\sophon-driver.sys
+
+; ----- sophon-driver_Device Coinstaller installation -----
+
+[sophon-driver_Device.NT.CoInstallers]
+AddReg    = sophon-driver_Device_CoInstaller_AddReg
+CopyFiles = sophon-driver_Device_CoInstaller_CopyFiles
+
+[sophon-driver_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[sophon-driver_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[sophon-driver_Device.NT.Wdf]
+KmdfService = sophon-driver, sophon-driver_wdfsect
+
+[sophon-driver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE   = 0x00000002
+ManufacturerName         = "<Sophgo>"                 ; manufacturer name
+ClassName                = "Sophon"                   ; ClassName
+DiskName                 = "Sophon Installation Disk"
+sophon-driver.DeviceDesc = "Sophon Device"
+sophon-driver.SVCDESC    = "Sophon Service"

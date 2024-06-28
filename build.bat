@@ -22,8 +22,10 @@ IF NOT "%runtime_type%"=="MT" IF NOT "%runtime_type%"=="MD" (
 
 IF "%target_type%"=="debug" (
   SET compile_type="Debug|x64"
+  SET driver_type=Debug
 ) ELSE (
   SET compile_type="Release|x64"
+  SET driver_type=Release
 )
 
 IF "%build_task%"=="" (
@@ -32,6 +34,8 @@ IF "%build_task%"=="" (
 
 IF "%build_task%"=="all" (
     CALL :build_module .\ libsophon
+) ELSE IF "%build_task%"=="driver" (
+    CALL :build_driver
 ) ELSE IF "%build_task%"=="bmlib" (
     CALL :build_module .\bmlib bmlib
 ) ELSE IF "%build_task%"=="bm-smi" (
@@ -53,6 +57,12 @@ IF "%build_task%"=="all" (
 SET path=%path_bk%
 
 GOTO:EOF
+
+:build_driver
+
+msbuild /t:clean /t:build .\windriver\sophon-driver.vcxproj /p:Configuration="%driver_type%" /p:Platform=x64
+
+GOTO :EOF
 
 :build_module
 
@@ -93,21 +103,23 @@ IF ERRORLEVEL 1 (
 GOTO:EOF
 
 :usage
-ECHO "Usage:                                                             "
-ECHO "  call build.bat <compile_type> <runtime_type> [module]            "
-ECHO "                                                                   "
-ECHO "  compile_type : release | debug                                   "
-ECHO "  runtime_type : MT      | MD                                      "
-ECHO "  module       :                                                   "
-ECHO "    all        : default, build all modules                        "
-ECHO "    bmlib      : build bmlib                                       "
-ECHO "    bm-smi     : build bm-smi, depends on bmlib                    "
-ECHO "    tpu-bmodel : build tpu-bmodel                                  "
-ECHO "    tpu-cpuop  : build tpu-cpuop                                   "
-ECHO "    tpu-runtime: build tpu-runtime, depends on bmlib               "
-ECHO "    bmvid      : build bmvid(jpu, vpu, vpp, bmcv), depends on bmlib"
-ECHO "                                                                   "
-ECHO "    pack       : pack libsophon to libsophon_win_x.x.x_${arch}.zip "
+ECHO Usage:
+ECHO   call build.bat ^<compile_type^> ^<runtime_type^> ^[module^]
+ECHO.
+ECHO   compile_type : release ^| debug
+ECHO   runtime_type : MT      ^| MD
+ECHO   module       :
+ECHO     all        : default, build all modules(except driver)
+ECHO     bmlib      : build bmlib
+ECHO     bm-smi     : build bm-smi, depends on bmlib
+ECHO     tpu-bmodel : build tpu-bmodel
+ECHO     tpu-cpuop  : build tpu-cpuop
+ECHO     tpu-runtime: build tpu-runtime, depends on bmlib
+ECHO     bmvid      : build bmvid(jpu, vpu, vpp, bmcv), depends on bmlib
+ECHO.
+ECHO     driver     : build sophon windows driver
+ECHO.
+ECHO     pack       : pack libsophon to libsophon_win_x.x.x_${arch}.zip
 CALL :err_exit
 GOTO:EOF
 
